@@ -1,0 +1,16 @@
+name: MCFrensHungerGames
+version: '${version}'
+main: com.brendanperry.mcfrenshungergames.MCFrensHungerGames
+api-version: '1.20'
+
+commands:
+  starthungergames:
+    description: Starts the Hunger Games
+    usage: /<command>
+    permission: op
+  teleporttoserver:
+    description: Teleports to a different server
+    usage: /<command>
+  testcommand:
+    description: Test command
+    usage: /<command>
