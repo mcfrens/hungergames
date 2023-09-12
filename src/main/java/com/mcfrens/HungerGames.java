@@ -1,7 +1,7 @@
-package com.brendanperry;
+package com.mcfrens;
 
-import com.brendanperry.commands.StartHungerGames;
-import com.brendanperry.listeners.PlayerDeathListener;
+import com.mcfrens.commands.StartHungerGames;
+import com.mcfrens.listeners.PlayerDeathListener;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 

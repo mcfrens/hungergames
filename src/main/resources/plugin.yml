@@ -1,6 +1,6 @@
-name: MCFrensHungerGames
+name: hungergames
 version: '${version}'
-main: com.brendanperry.mcfrenshungergames.MCFrensHungerGames
+main: com.mcfrens.HungerGames
 api-version: '1.20'
 
 commands:
@@ -8,9 +8,3 @@ commands:
     description: Starts the Hunger Games
     usage: /<command>
     permission: op
-  teleporttoserver:
-    description: Teleports to a different server
-    usage: /<command>
-  testcommand:
-    description: Test command
-    usage: /<command>

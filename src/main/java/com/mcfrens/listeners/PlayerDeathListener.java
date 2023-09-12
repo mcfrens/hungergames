@@ -1,4 +1,4 @@
-package com.brendanperry.listeners;
+package com.mcfrens.listeners;
 
 import org.bukkit.GameMode;
 import org.bukkit.Location;
