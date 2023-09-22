@@ -7,10 +7,10 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-public class StartHungerGames implements CommandExecutor {
+public class JoinHungerGames implements CommandExecutor {
     GameManager gameManager;
 
-    public StartHungerGames(GameManager gameManager) {
+    public JoinHungerGames(GameManager gameManager) {
         this.gameManager = gameManager;
     }
 
@@ -18,9 +18,9 @@ public class StartHungerGames implements CommandExecutor {
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         Player player = (Player) sender;
 
-        gameManager.startGame();
+        gameManager.joinGame(player);
 
-        player.sendMessage(Component.text("Starting Hunger Games."));
+        player.sendMessage(Component.text("You have joined Hunger Games."));
 
         return true;
     }

@@ -8,3 +8,19 @@ commands:
     description: Starts the Hunger Games
     usage: /<command>
     permission: op
+  joinhungergames:
+    description: Join Hunger Games
+    usage: /<command>
+    permission: op
+  leavehungergames:
+    description: Leave Hunger Games
+    usage: /<command>
+    permission: op
+  addstartlocation:
+    description: Adds start location for Hunger Games
+    usage: /<command>
+    permission: op
+  resetstartlocations:
+    description: Removes all start locations for Hunger Games
+    usage: /<command>
+    permission: op
