@@ -2,8 +2,16 @@ package com.mcfrens;
 
 import com.mcfrens.commands.*;
 import com.mcfrens.listeners.PlayerDeathListener;
+import com.mcfrens.listeners.PlayerLeaveListener;
+import com.mcfrens.listeners.PlayerRespawnListener;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
+
+/*
+TODO:
+- Block players from joining once game has started
+- Determine when game is over
+ */
 
 public final class HungerGames extends JavaPlugin {
     GameManager gameManager = new GameManager(this);
@@ -15,8 +23,12 @@ public final class HungerGames extends JavaPlugin {
         this.getCommand("addstartlocation").setExecutor(new AddStartLocation(this));
         this.getCommand("resetstartlocations").setExecutor(new ResetStartLocations(this));
         this.getCommand("starthungergames").setExecutor(new StartHungerGames(gameManager));
+        this.getCommand("addchestlocation").setExecutor(new AddChestLocation(this));
+        this.getCommand("resetchestlocations").setExecutor(new ResetChestLocations(this));
 
-        this.getServer().getPluginManager().registerEvents(new PlayerDeathListener(), this);
+        this.getServer().getPluginManager().registerEvents(new PlayerDeathListener(gameManager), this);
+        this.getServer().getPluginManager().registerEvents(new PlayerLeaveListener(gameManager), this);
+        this.getServer().getPluginManager().registerEvents(new PlayerRespawnListener(gameManager), this);
     }
 
     @Override

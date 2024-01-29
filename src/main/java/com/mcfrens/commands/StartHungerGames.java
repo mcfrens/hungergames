@@ -18,9 +18,9 @@ public class StartHungerGames implements CommandExecutor {
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         Player player = (Player) sender;
 
-        gameManager.startGame();
-
         player.sendMessage(Component.text("Starting Hunger Games."));
+
+        gameManager.startGame(player);
 
         return true;
     }

@@ -24,3 +24,15 @@ commands:
     description: Removes all start locations for Hunger Games
     usage: /<command>
     permission: op
+  resetchestlocations:
+    description: Removes all chest locations for Hunger Games
+    usage: /<command>
+    permission: op
+  addcornucopiachestlocation:
+    description: Adds a cornucopia chest location for Hunger Games
+    usage: /<command>
+    permission: op
+  addcommonchestlocation:
+    description: Adds a common chest location for Hunger Games
+    usage: /<command>
+    permission: op
