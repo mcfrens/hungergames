@@ -16,6 +16,10 @@ commands:
     description: Leave Hunger Games
     usage: /<command>
     permission: op
+  endhungergames:
+      description: Ends the Hunger Games
+      usage: /<command>
+      permission: op
   addstartlocation:
     description: Adds start location for Hunger Games
     usage: /<command>

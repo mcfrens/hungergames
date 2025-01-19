@@ -1,5 +1,6 @@
 package com.mcfrens;
 
+import net.kyori.adventure.title.Title;
 import org.bukkit.*;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.Chest;
@@ -18,7 +19,7 @@ public class GameManager {
     Map<Player, Location> playerDeathLocations = new HashMap<>();
     ArrayList<Player> startingPlayers = new ArrayList<>();
     ArrayList<Player> activePlayers = new ArrayList<>();
-    Integer startDelay = 30;
+    Integer startDelay = 10;
     Integer timeTillStart = startDelay;
 
     public GameManager(Plugin plugin) {
@@ -28,6 +29,11 @@ public class GameManager {
     public void joinGame(Player player) {
         if (!isInProgress) {
             startingPlayers.add(player);
+        } else if (startingPlayers.contains(player)) {
+            player.sendMessage("You are already in the game.");
+        }
+        else {
+            player.sendMessage("Game is already running.");
         }
     }
 
@@ -36,6 +42,16 @@ public class GameManager {
     }
 
     public void startGame(Player player) {
+        if (chestLocations.length == 0) {
+            player.sendMessage("You have no chests.");
+            return;
+        }
+
+        if (startLocations.length < startingPlayers.size()) {
+            player.sendMessage("There are not enough spawn points for all the players.");
+            return;
+        }
+
         try {
             setGameState();
             movePlayersIntoPosition();
@@ -78,6 +94,17 @@ public class GameManager {
         return playerDeathLocations.get(player);
     }
 
+    public void endGame() {
+        for (Player player : startingPlayers) {
+            player.setGameMode(GameMode.ADVENTURE);
+            player.setFlying(false);
+            player.setHealth(0);
+        }
+
+        startingPlayers = new ArrayList<>();
+        isInProgress = false;
+    }
+
     private void setGameState() throws Exception {
         timeTillStart = startDelay;
         isInProgress = true;
@@ -95,17 +122,21 @@ public class GameManager {
     }
 
     private void startClock() {
-        Bukkit.getServer().dispatchCommand(Bukkit.getConsoleSender(), "title @a title \"" + timeTillStart.toString() + "\"");
-
         Bukkit.getScheduler().runTaskLater(plugin, () -> {
-            timeTillStart -= 1;
+            String title = "";
 
             if (timeTillStart != 0) {
-                Bukkit.getServer().dispatchCommand(Bukkit.getConsoleSender(), "title @a title \"" + timeTillStart.toString() + "\"");
+                title = timeTillStart.toString();
                 startClock();
             } else {
-                Bukkit.getServer().dispatchCommand(Bukkit.getConsoleSender(), "title @a title \"\"");
+                title = "May the odds be ever in your favor.";
             }
+
+            for (Player player : activePlayers) {
+                player.sendTitle(title, "");
+            }
+
+            timeTillStart -= 1;
         }, 20L);
     }
 
@@ -188,16 +219,5 @@ public class GameManager {
                 throw new Exception("Could not load hunger games loot table. Did you add the MC Frens datapack?");
             }
         }
-    }
-
-    private void endGame() {
-        for (Player player : startingPlayers) {
-            player.setGameMode(GameMode.ADVENTURE);
-            player.setFlying(false);
-            player.setHealth(0);
-        }
-
-        startingPlayers = new ArrayList<>();
-        isInProgress = false;
     }
 }

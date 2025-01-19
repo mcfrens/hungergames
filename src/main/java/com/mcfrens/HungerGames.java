@@ -25,6 +25,7 @@ public final class HungerGames extends JavaPlugin {
         this.getCommand("starthungergames").setExecutor(new StartHungerGames(gameManager));
         this.getCommand("addchestlocation").setExecutor(new AddChestLocation(this));
         this.getCommand("resetchestlocations").setExecutor(new ResetChestLocations(this));
+        this.getCommand("endhungergames").setExecutor(new EndHungerGames(gameManager));
 
         this.getServer().getPluginManager().registerEvents(new PlayerDeathListener(gameManager), this);
         this.getServer().getPluginManager().registerEvents(new PlayerLeaveListener(gameManager), this);
