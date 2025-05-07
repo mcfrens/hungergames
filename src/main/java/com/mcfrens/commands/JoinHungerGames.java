@@ -20,8 +20,6 @@ public class JoinHungerGames implements CommandExecutor {
 
         gameManager.joinGame(player);
 
-        player.sendMessage(Component.text("You have joined Hunger Games."));
-
         return true;
     }
 }

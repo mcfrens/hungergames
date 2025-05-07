@@ -1,7 +1,7 @@
 name: hungergames
 version: '${version}'
 main: com.mcfrens.HungerGames
-api-version: '1.20'
+api-version: '1.20.4'
 
 commands:
   starthungergames:
@@ -32,11 +32,19 @@ commands:
     description: Removes all chest locations for Hunger Games
     usage: /<command>
     permission: op
-  addcornucopiachestlocation:
-    description: Adds a cornucopia chest location for Hunger Games
+  addchestlocation:
+    description: Adds a common chest location for Hunger Games
     usage: /<command>
     permission: op
-  addcommonchestlocation:
-    description: Adds a common chest location for Hunger Games
+  addallchestlocations:
+    description: Adds a common chest location for Hunger Games for all chests found in surrounding chunk
+    usage: /<command>
+    permission: op
+  resetfireworklocations:
+    description: Removes all firework locations for Hunger Games
+    usage: /<command>
+    permission: op
+  addfireworklocation:
+    description: Adds a firework location for Hunger Games
     usage: /<command>
     permission: op

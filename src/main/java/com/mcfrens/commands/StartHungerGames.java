@@ -18,6 +18,11 @@ public class StartHungerGames implements CommandExecutor {
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         Player player = (Player) sender;
 
+        if (gameManager.isInProgress) {
+            player.sendMessage(Component.text("Game is already in progress."));
+            return false;
+        }
+
         player.sendMessage(Component.text("Starting Hunger Games."));
 
         gameManager.startGame(player);

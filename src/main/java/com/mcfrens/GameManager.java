@@ -1,10 +1,11 @@
 package com.mcfrens;
 
-import net.kyori.adventure.title.Title;
 import org.bukkit.*;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.Chest;
+import org.bukkit.entity.Firework;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.meta.FireworkMeta;
 import org.bukkit.loot.LootContext;
 import org.bukkit.loot.LootTable;
 import org.bukkit.plugin.Plugin;
@@ -24,16 +25,23 @@ public class GameManager {
 
     public GameManager(Plugin plugin) {
         this.plugin = plugin;
+
+        try {
+            startLocations = getLocations("locations.start");
+            chestLocations = getLocations("locations.chests");
+        } catch(Exception ex) {
+            System.out.println("[GameManager] Could not find locations.start");
+        }
     }
 
     public void joinGame(Player player) {
-        if (!isInProgress) {
-            startingPlayers.add(player);
+        if (isInProgress) {
+            player.sendMessage("The game has already started.");
         } else if (startingPlayers.contains(player)) {
             player.sendMessage("You are already in the game.");
-        }
-        else {
-            player.sendMessage("Game is already running.");
+        } else {
+            startingPlayers.add(player);
+            player.sendMessage("You have joined the game.");
         }
     }
 
@@ -55,17 +63,17 @@ public class GameManager {
         try {
             setGameState();
             movePlayersIntoPosition();
-            fillAllChests();
+            fillAllChests(player);
             startClock();
-            Bukkit.getScheduler().runTaskLater(plugin, this::releasePlayers, startDelay * 20);
+            Bukkit.getScheduler().runTaskLater(plugin, this::releasePlayers, (startDelay + 1) * 20L);
         } catch (Exception e) {
             player.sendMessage(e.getMessage());
         }
     }
 
-    private void fillAllChests() throws Exception {
+    private void fillAllChests(Player player) throws Exception {
         for (Location chestLocation : chestLocations) {
-            prepareChest(chestLocation);
+            prepareChest(chestLocation, player);
         }
     }
 
@@ -103,37 +111,52 @@ public class GameManager {
 
         startingPlayers = new ArrayList<>();
         isInProgress = false;
+
+        try {
+            launchFireworks();
+        } catch (Exception e) {
+            System.out.println("Ooof fireworks fail");
+        }
     }
 
-    private void setGameState() throws Exception {
+    private void setGameState() {
         timeTillStart = startDelay;
         isInProgress = true;
         activePlayers = startingPlayers;
         playerDeathLocations = new HashMap<>();
-        startLocations = getLocations("locations.start");
-        chestLocations = getLocations("locations.chests");
         clearTempBlocks();
     }
 
     private void movePlayersIntoPosition() {
         for (int i = 0; i < startingPlayers.size(); i++) {
-            startingPlayers.get(i).teleport(startLocations[i]);
+            Player player = startingPlayers.get(i);
+            player.teleport(startLocations[i]);
+            player.setGameMode(GameMode.ADVENTURE);
+            player.setFlying(false);
+            player.setHealth(20);
+            player.setFoodLevel(20);
+            player.getInventory().clear();
         }
     }
 
     private void startClock() {
         Bukkit.getScheduler().runTaskLater(plugin, () -> {
-            String title = "";
+            String title;
 
             if (timeTillStart != 0) {
                 title = timeTillStart.toString();
                 startClock();
+                try {
+                    launchFireworks();
+                } catch (Exception e) {
+                    System.out.println("Ooof fireworks fail");
+                }
             } else {
                 title = "May the odds be ever in your favor.";
             }
 
             for (Player player : activePlayers) {
-                player.sendTitle(title, "");
+                player.sendTitle("", title);
             }
 
             timeTillStart -= 1;
@@ -160,7 +183,7 @@ public class GameManager {
         }
     }
 
-    private void prepareChest(Location location) throws Exception {
+    private void prepareChest(Location location, Player player) throws Exception {
         BlockState block;
         try {
             block = Objects.requireNonNull(plugin.getServer().getWorld("world")).getBlockAt(location).getState();
@@ -171,8 +194,8 @@ public class GameManager {
         if (block.getType() == Material.CHEST) {
             Chest chest = (Chest) block;
 
-            clearChest(chest);
-            prepareChest(chest);
+            clearChest(chest, player);
+            prepareChest(chest, player);
         } else {
             throw new Exception("Saved chest location is not a chest!");
         }
@@ -203,11 +226,12 @@ public class GameManager {
         return loadedLocations.toArray(Location[]::new);
     }
 
-    private void clearChest(Chest chest) {
+    private void clearChest(Chest chest, Player player)
+    {
         chest.getBlockInventory().clear();
     }
 
-    private void prepareChest(Chest chest) throws Exception {
+    private void prepareChest(Chest chest, Player player) throws Exception {
         NamespacedKey key = NamespacedKey.fromString("hungergames:chests/hg_general");
 
         if (key != null) {
@@ -218,6 +242,37 @@ public class GameManager {
             } else {
                 throw new Exception("Could not load hunger games loot table. Did you add the MC Frens datapack?");
             }
+        } else {
+            throw new Exception("Could not load hunger games loot table. Did you add the MC Frens datapack?");
         }
+    }
+
+    private void launchFireworks() throws Exception {
+        Location[] locations = getLocations("locations.fireworks");
+
+        for (Location location : locations) {
+            launchFirework(location);
+        }
+    }
+
+    private void launchFirework(Location location) {
+        World world = location.getWorld();
+        if (world == null) return;
+
+        Firework firework = world.spawn(location, Firework.class);
+        FireworkMeta meta = firework.getFireworkMeta();
+
+        // Customize firework effect
+        FireworkEffect effect = FireworkEffect.builder()
+                .withColor(Color.RED)
+                .withFade(Color.YELLOW)
+                .with(FireworkEffect.Type.BALL_LARGE)
+                .trail(true)
+                .flicker(true)
+                .build();
+
+        meta.addEffect(effect);
+        meta.setPower(1); // Flight duration
+        firework.setFireworkMeta(meta);
     }
 }
