@@ -18,6 +18,11 @@ public class JoinHungerGames implements CommandExecutor {
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         Player player = (Player) sender;
 
+        if (gameManager.isPlayerInGame(player)) {
+            player.sendMessage(Component.text("You have already joined."));
+            return false;
+        }
+
         gameManager.joinGame(player);
 
         return true;

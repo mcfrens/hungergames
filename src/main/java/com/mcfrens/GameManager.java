@@ -27,8 +27,7 @@ public class GameManager {
         this.plugin = plugin;
 
         try {
-            startLocations = getLocations("locations.start");
-            chestLocations = getLocations("locations.chests");
+            updateConfigs();
         } catch(Exception ex) {
             System.out.println("[GameManager] Could not find locations.start");
         }
@@ -61,9 +60,10 @@ public class GameManager {
         }
 
         try {
+            updateConfigs();
             setGameState();
             movePlayersIntoPosition();
-            fillAllChests(player);
+            fillAllChests();
             startClock();
             Bukkit.getScheduler().runTaskLater(plugin, this::releasePlayers, (startDelay + 1) * 20L);
         } catch (Exception e) {
@@ -71,13 +71,22 @@ public class GameManager {
         }
     }
 
-    private void fillAllChests(Player player) throws Exception {
+    private void updateConfigs() throws Exception {
+        startLocations = getLocations("locations.start");
+        chestLocations = getLocations("locations.chests");
+    }
+
+    private void fillAllChests() throws Exception {
         for (Location chestLocation : chestLocations) {
-            prepareChest(chestLocation, player);
+            if (chestLocation != null) {
+                prepareChest(chestLocation);
+            }
         }
     }
 
     public void eliminatePlayer(Player player) {
+        if (isInProgress == false) { return; }
+
         activePlayers.remove(player);
 
         playerDeathLocations.put(player, player.getLocation());
@@ -88,7 +97,9 @@ public class GameManager {
 
             Bukkit.getScheduler().runTaskLater(plugin, this::endGame, 100L);
         } else if (activePlayers.isEmpty()) {
-            endGame();
+            Bukkit.getServer().dispatchCommand(Bukkit.getConsoleSender(), "title @a title \"" + "Everybody died :/\"");
+
+            Bukkit.getScheduler().runTaskLater(plugin, this::endGame, 100L);
         } else {
             Bukkit.getServer().dispatchCommand(Bukkit.getConsoleSender(), "say \"" + activePlayers.size() + " players remain.\"");
         }
@@ -103,6 +114,8 @@ public class GameManager {
     }
 
     public void endGame() {
+        resetWorldBorder();
+
         for (Player player : startingPlayers) {
             player.setGameMode(GameMode.ADVENTURE);
             player.setFlying(false);
@@ -120,6 +133,7 @@ public class GameManager {
     }
 
     private void setGameState() {
+        resetWorldBorder();
         timeTillStart = startDelay;
         isInProgress = true;
         activePlayers = startingPlayers;
@@ -136,6 +150,11 @@ public class GameManager {
             player.setHealth(20);
             player.setFoodLevel(20);
             player.getInventory().clear();
+            try {
+                launchFireworks();
+            } catch (Exception e) {
+                System.out.println("Ooof fireworks fail");
+            }
         }
     }
 
@@ -146,13 +165,9 @@ public class GameManager {
             if (timeTillStart != 0) {
                 title = timeTillStart.toString();
                 startClock();
-                try {
-                    launchFireworks();
-                } catch (Exception e) {
-                    System.out.println("Ooof fireworks fail");
-                }
             } else {
                 title = "May the odds be ever in your favor.";
+                startBorderShrink();
             }
 
             for (Player player : activePlayers) {
@@ -161,6 +176,26 @@ public class GameManager {
 
             timeTillStart -= 1;
         }, 20L);
+    }
+
+    // set the center of the border on the map itself
+    private void resetWorldBorder() {
+        // would need to edit this if the game needed to work in a different world
+        World world = Bukkit.getServer().getWorld("world");
+        if (world != null) {
+            WorldBorder border = world.getWorldBorder();
+            border.setSize(350.0);
+        }
+    }
+
+    private void startBorderShrink() {
+        // would need to edit this if the game needed to work in a different world
+        World world = Bukkit.getServer().getWorld("world");
+        if (world != null) {
+            WorldBorder border = world.getWorldBorder();
+            // shrink over the course of 15 minutes
+            border.setSize(25.0, 60 * 15);
+        }
     }
 
     private void releasePlayers() {
@@ -183,21 +218,21 @@ public class GameManager {
         }
     }
 
-    private void prepareChest(Location location, Player player) throws Exception {
+    private void prepareChest(Location location) throws Exception {
         BlockState block;
         try {
             block = Objects.requireNonNull(plugin.getServer().getWorld("world")).getBlockAt(location).getState();
+
+            if (block.getType() == Material.CHEST) {
+                Chest chest = (Chest) block;
+
+                clearChest(chest);
+                prepareChest(chest);
+            } else {
+                System.out.println("Could not get block location for chest.");
+            }
         } catch (NullPointerException e) {
-            throw new Exception("Could not get block location for chest.");
-        }
-
-        if (block.getType() == Material.CHEST) {
-            Chest chest = (Chest) block;
-
-            clearChest(chest, player);
-            prepareChest(chest, player);
-        } else {
-            throw new Exception("Saved chest location is not a chest!");
+            System.out.println("Could not get block location for chest.");
         }
     }
 
@@ -226,12 +261,12 @@ public class GameManager {
         return loadedLocations.toArray(Location[]::new);
     }
 
-    private void clearChest(Chest chest, Player player)
+    private void clearChest(Chest chest)
     {
         chest.getBlockInventory().clear();
     }
 
-    private void prepareChest(Chest chest, Player player) throws Exception {
+    private void prepareChest(Chest chest) throws Exception {
         NamespacedKey key = NamespacedKey.fromString("hungergames:chests/hg_general");
 
         if (key != null) {
