@@ -54,6 +54,8 @@ public class GameManager {
             return;
         }
 
+        setStartingPlayers();
+
         if (startLocations.length < startingPlayers.size()) {
             player.sendMessage("There are not enough spawn points for all the players. Start Locations: " + startLocations.length + " Starting Players: " + startingPlayers.size());
             return;
@@ -97,9 +99,7 @@ public class GameManager {
 
             Bukkit.getScheduler().runTaskLater(plugin, this::endGame, 100L);
         } else if (activePlayers.isEmpty()) {
-            Bukkit.getServer().dispatchCommand(Bukkit.getConsoleSender(), "title @a title \"" + "Everybody died :/\"");
-
-            Bukkit.getScheduler().runTaskLater(plugin, this::endGame, 100L);
+            endGame();
         } else {
             Bukkit.getServer().dispatchCommand(Bukkit.getConsoleSender(), "say \"" + activePlayers.size() + " players remain.\"");
         }
@@ -114,6 +114,7 @@ public class GameManager {
     }
 
     public void endGame() {
+        isInProgress = false;
         resetWorldBorder();
 
         for (Player player : startingPlayers) {
@@ -122,14 +123,19 @@ public class GameManager {
             player.setHealth(0);
         }
 
-        startingPlayers = new ArrayList<>();
-        isInProgress = false;
+        startingPlayers.clear();
 
         try {
             launchFireworks();
         } catch (Exception e) {
             System.out.println("Ooof fireworks fail");
         }
+    }
+
+    private void setStartingPlayers() {
+        ArrayList<Player> players = new ArrayList<>(Bukkit.getOnlinePlayers());
+        startingPlayers.clear();
+        startingPlayers.addAll(players);
     }
 
     private void setGameState() {
@@ -311,3 +317,5 @@ public class GameManager {
         firework.setFireworkMeta(meta);
     }
 }
+
+// Dead players still in spectator mode, not moved back to spawn, tp alive people back to spawn
