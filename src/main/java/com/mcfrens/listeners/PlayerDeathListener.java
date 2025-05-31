@@ -17,6 +17,10 @@ public class PlayerDeathListener implements Listener {
 
     @EventHandler
     public void onPlayerDeath(PlayerDeathEvent event) {
+        if (gameManager.isInProgress == false) {
+            return;
+        }
+
         Player player = event.getPlayer();
 
         if (gameManager.isPlayerInGame(player)) {
