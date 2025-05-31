@@ -56,7 +56,7 @@ public class GameManager {
         }
 
         if (startLocations.length < startingPlayers.size()) {
-            player.sendMessage("There are not enough spawn points for all the players.");
+            player.sendMessage("There are not enough spawn points for all the players. Start Locations: " + startLocations.length + " Starting Players: " + startingPlayers.size());
             return;
         }
 
