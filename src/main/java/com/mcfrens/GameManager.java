@@ -319,3 +319,8 @@ public class GameManager {
 }
 
 // Dead players still in spectator mode, not moved back to spawn, tp alive people back to spawn
+// set random time of day on start
+// let people start with button
+// go back to lobby
+// add time before world border, 5 minutes
+// proximity chat

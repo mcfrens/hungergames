@@ -8,14 +8,6 @@ commands:
     description: Starts the Hunger Games
     usage: /<command>
     permission: op
-  joinhungergames:
-    description: Join Hunger Games
-    usage: /<command>
-    permission: op
-  leavehungergames:
-    description: Leave Hunger Games
-    usage: /<command>
-    permission: op
   endhungergames:
       description: Ends the Hunger Games
       usage: /<command>

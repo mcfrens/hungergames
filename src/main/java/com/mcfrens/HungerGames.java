@@ -18,8 +18,6 @@ public final class HungerGames extends JavaPlugin {
 
     @Override
     public void onEnable() {
-        this.getCommand("joinhungergames").setExecutor(new JoinHungerGames(gameManager));
-        this.getCommand("leavehungergames").setExecutor(new LeaveHungerGames(gameManager));
         this.getCommand("addstartlocation").setExecutor(new AddStartLocation(this));
         this.getCommand("resetstartlocations").setExecutor(new ResetStartLocations(this));
         this.getCommand("starthungergames").setExecutor(new StartHungerGames(gameManager));
