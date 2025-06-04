@@ -145,6 +145,7 @@ public class GameManager {
         activePlayers = startingPlayers;
         playerDeathLocations = new HashMap<>();
         clearTempBlocks();
+        setRandomTime();
     }
 
     private void movePlayersIntoPosition() {
@@ -315,6 +316,15 @@ public class GameManager {
         meta.addEffect(effect);
         meta.setPower(1); // Flight duration
         firework.setFireworkMeta(meta);
+    }
+
+    private void setRandomTime() {
+        World world = Bukkit.getWorlds().get(0); // Get the first world
+
+        Random random = new Random();
+        long randomTime = random.nextInt(24000);
+
+        world.setTime(randomTime);
     }
 }
 
