@@ -155,11 +155,12 @@ public class GameManager {
             player.setHealth(20);
             player.setFoodLevel(20);
             player.getInventory().clear();
-            try {
-                launchFireworks();
-            } catch (Exception e) {
-                System.out.println("Ooof fireworks fail");
-            }
+        }
+
+        try {
+            launchFireworks();
+        } catch (Exception e) {
+            System.out.println("Ooof fireworks fail");
         }
     }
 
