@@ -189,7 +189,8 @@ public class GameManager {
         World world = Bukkit.getServer().getWorld("world");
         if (world != null) {
             WorldBorder border = world.getWorldBorder();
-            border.setSize(350.0);
+            int borderSize = plugin.getConfig().getInt("settings.startingBorderSize", 350);
+            border.setSize(borderSize);
         }
     }
 
@@ -198,8 +199,8 @@ public class GameManager {
         World world = Bukkit.getServer().getWorld("world");
         if (world != null) {
             WorldBorder border = world.getWorldBorder();
-            // shrink over the course of 15 minutes
-            border.setSize(25.0, 60 * 15);
+            int shrinkTime = plugin.getConfig().getInt("settings.borderShrinkTime", 900); // 15 minutes default
+            border.setSize(25.0, shrinkTime);
         }
     }
 
@@ -344,7 +345,7 @@ public class GameManager {
     }
 
     private void clearDroppedItems() {
-        World world = Bukkit.getWorld("world"); // or your game world name
+        World world = Bukkit.getWorld("world");
         if (world != null) {
             world.getEntitiesByClass(org.bukkit.entity.Item.class).forEach(Entity::remove);
         }

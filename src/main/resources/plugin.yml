@@ -40,3 +40,12 @@ commands:
     description: Adds a firework location for Hunger Games
     usage: /<command>
     permission: op
+  setstartingbordersize:
+      description: Sets the Hunger Games world border size the beginning of the game
+      usage: /<command> <size>
+  setbordershrinktime:
+    description: Sets the time in seconds for the world border to shrink
+    usage: /<command> <seconds>
+  setfinalbordersize:
+    description: Sets the final size for the world border after shrinking
+    usage: /setfinalbordersize <size>

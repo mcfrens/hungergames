@@ -21,6 +21,9 @@ public final class HungerGames extends JavaPlugin {
         this.getCommand("endhungergames").setExecutor(new EndHungerGames(gameManager));
         this.getCommand("addfireworklocation").setExecutor(new AddFireworkLocation(this));
         this.getCommand("resetfireworklocations").setExecutor(new ResetFireworkLocations(this));
+        this.getCommand("setstartingbordersize").setExecutor(new SetStartingBorderSize(this));
+        this.getCommand("setbordershrinktime").setExecutor(new SetBorderShrinkTime(this));
+        this.getCommand("setfinalbordersize").setExecutor(new SetFinalBorderSize(this));
 
         this.getServer().getPluginManager().registerEvents(new PlayerDeathListener(gameManager), this);
         this.getServer().getPluginManager().registerEvents(new PlayerLeaveListener(gameManager), this);
