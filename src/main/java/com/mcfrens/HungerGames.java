@@ -7,12 +7,6 @@ import com.mcfrens.listeners.PlayerRespawnListener;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 
-/*
-TODO:
-- Block players from joining once game has started
-- Determine when game is over
- */
-
 public final class HungerGames extends JavaPlugin {
     GameManager gameManager = new GameManager(this);
 

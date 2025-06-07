@@ -3,6 +3,7 @@ package com.mcfrens;
 import org.bukkit.*;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.Chest;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.Firework;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.meta.FireworkMeta;
@@ -11,6 +12,7 @@ import org.bukkit.loot.LootTable;
 import org.bukkit.plugin.Plugin;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class GameManager {
     public Boolean isInProgress = false;
@@ -18,8 +20,7 @@ public class GameManager {
     Location[] startLocations = new Location[0];
     Location[] chestLocations = new Location[0];
     Map<Player, Location> playerDeathLocations = new HashMap<>();
-    ArrayList<Player> startingPlayers = new ArrayList<>();
-    ArrayList<Player> activePlayers = new ArrayList<>();
+    ArrayList<HungerGamesPlayer> players = new ArrayList<>();
     Integer startDelay = 10;
     Integer timeTillStart = startDelay;
 
@@ -33,21 +34,6 @@ public class GameManager {
         }
     }
 
-    public void joinGame(Player player) {
-        if (isInProgress) {
-            player.sendMessage("The game has already started.");
-        } else if (startingPlayers.contains(player)) {
-            player.sendMessage("You are already in the game.");
-        } else {
-            startingPlayers.add(player);
-            player.sendMessage("You have joined the game.");
-        }
-    }
-
-    public void leaveGame(Player player) {
-        startingPlayers.remove(player);
-    }
-
     public void startGame(Player player) {
         if (chestLocations.length == 0) {
             player.sendMessage("You have no chests.");
@@ -56,8 +42,8 @@ public class GameManager {
 
         setStartingPlayers();
 
-        if (startLocations.length < startingPlayers.size()) {
-            player.sendMessage("There are not enough spawn points for all the players. Start Locations: " + startLocations.length + " Starting Players: " + startingPlayers.size());
+        if (startLocations.length < players.size()) {
+            player.sendMessage("There are not enough spawn points for all the players. Start Locations: " + startLocations.length + " Starting Players: " + players.size());
             return;
         }
 
@@ -89,12 +75,14 @@ public class GameManager {
     public void eliminatePlayer(Player player) {
         if (isInProgress == false) { return; }
 
-        activePlayers.remove(player);
+        deactivatePlayer(player);
+
+        List<HungerGamesPlayer> activePlayers = getActivePlayers();
 
         playerDeathLocations.put(player, player.getLocation());
 
         if (activePlayers.size() == 1) {
-            Player lastPlayer = activePlayers.get(0);
+            Player lastPlayer = activePlayers.get(0).player;
             Bukkit.getServer().dispatchCommand(Bukkit.getConsoleSender(), "title @a title \"" + lastPlayer.getName() + " is the victor!\"");
 
             Bukkit.getScheduler().runTaskLater(plugin, this::endGame, 100L);
@@ -106,7 +94,13 @@ public class GameManager {
     }
 
     public Boolean isPlayerInGame(Player player) {
-        return activePlayers.contains(player);
+        for (HungerGamesPlayer hgPlayer : players) {
+            if (hgPlayer.player.equals(player) && hgPlayer.isActive) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     public Location getDeathLocation(Player player) {
@@ -117,13 +111,15 @@ public class GameManager {
         isInProgress = false;
         resetWorldBorder();
 
-        for (Player player : startingPlayers) {
+        for (HungerGamesPlayer hgPlayer : players) {
+            Player player = hgPlayer.player;
             player.setGameMode(GameMode.ADVENTURE);
             player.setFlying(false);
             player.setHealth(0);
         }
 
-        startingPlayers.clear();
+        players.clear();
+        clearDroppedItems();
 
         try {
             launchFireworks();
@@ -133,24 +129,26 @@ public class GameManager {
     }
 
     private void setStartingPlayers() {
-        ArrayList<Player> players = new ArrayList<>(Bukkit.getOnlinePlayers());
-        startingPlayers.clear();
-        startingPlayers.addAll(players);
+        ArrayList<Player> onlinePlayers = new ArrayList<>(Bukkit.getOnlinePlayers());
+
+        players = onlinePlayers.stream()
+                .map(HungerGamesPlayer::new)
+                .collect(Collectors.toCollection(ArrayList::new));
     }
 
     private void setGameState() {
         resetWorldBorder();
         timeTillStart = startDelay;
         isInProgress = true;
-        activePlayers = startingPlayers;
+        activateAllPlayers();
         playerDeathLocations = new HashMap<>();
         clearTempBlocks();
         setRandomTime();
     }
 
     private void movePlayersIntoPosition() {
-        for (int i = 0; i < startingPlayers.size(); i++) {
-            Player player = startingPlayers.get(i);
+        for (int i = 0; i < players.size(); i++) {
+            Player player = players.get(i).player;
             player.teleport(startLocations[i]);
             player.setGameMode(GameMode.ADVENTURE);
             player.setFlying(false);
@@ -177,8 +175,8 @@ public class GameManager {
                 startBorderShrink();
             }
 
-            for (Player player : activePlayers) {
-                player.sendTitle("", title);
+            for (HungerGamesPlayer hgPlayer : players) {
+                hgPlayer.player.sendTitle("", title);
             }
 
             timeTillStart -= 1;
@@ -206,7 +204,8 @@ public class GameManager {
     }
 
     private void releasePlayers() {
-        for (Player player : startingPlayers) {
+        for (HungerGamesPlayer hgPlayer : players) {
+            Player player = hgPlayer.player;
             Location location = player.getLocation();
             location.set(location.x(), location.y() + 3, location.z());
             player.teleport(location);
@@ -326,11 +325,28 @@ public class GameManager {
 
         world.setTime(randomTime);
     }
-}
 
-// Dead players still in spectator mode, not moved back to spawn, tp alive people back to spawn
-// set random time of day on start
-// let people start with button
-// go back to lobby
-// add time before world border, 5 minutes
-// proximity chat
+    private List<HungerGamesPlayer> getActivePlayers() {
+        return players.stream()
+                .filter(HungerGamesPlayer::isActive) // Filter based on active status
+                .toList();
+    }
+
+    private void deactivatePlayer(Player player) {
+        players.stream()
+                .filter(p -> p.player.equals(player))
+                .findFirst()
+                .ifPresent(p -> p.setActive(false)); // Mark as inactive
+    }
+
+    private void activateAllPlayers() {
+        players.forEach(player -> player.setActive(true));
+    }
+
+    private void clearDroppedItems() {
+        World world = Bukkit.getWorld("world"); // or your game world name
+        if (world != null) {
+            world.getEntitiesByClass(org.bukkit.entity.Item.class).forEach(Entity::remove);
+        }
+    }
+}

@@ -24,9 +24,9 @@ public class PlayerDeathListener implements Listener {
         Player player = event.getPlayer();
 
         if (gameManager.isPlayerInGame(player)) {
-            player.sendMessage(Component.text("You are in the game and eliminated."));
+            player.sendMessage(Component.text("You have been eliminated."));
             Location deathLocation = player.getLocation();
-            deathLocation.add(0, 5, 0);
+            deathLocation.add(5, 20, 5);
 
             player.getWorld().strikeLightning(deathLocation);
 
