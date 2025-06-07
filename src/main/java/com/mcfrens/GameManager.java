@@ -209,11 +209,11 @@ public class GameManager {
     private void releasePlayers() {
         for (HungerGamesPlayer hgPlayer : players) {
             Player player = hgPlayer.player;
-            Location location = player.getLocation();
-            location.set(location.x(), location.y() + 3, location.z());
+            Location location = player.getLocation().clone();
+            location.add(0, 3, 0);
             player.teleport(location);
 
-            Location tempBlockLocation = location.set(location.x(), location.y() - 2, location.z());
+            Location tempBlockLocation = location.clone().add(0, -2, 0);
 
             tempBlockLocation.getBlock().setType(Material.GLASS);
         }
