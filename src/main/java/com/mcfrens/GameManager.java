@@ -200,7 +200,8 @@ public class GameManager {
         if (world != null) {
             WorldBorder border = world.getWorldBorder();
             int shrinkTime = plugin.getConfig().getInt("settings.borderShrinkTime", 900); // 15 minutes default
-            border.setSize(25.0, shrinkTime);
+            double finalSize = plugin.getConfig().getDouble("settings.finalBorderSize", 25.0);
+            border.setSize(finalSize, shrinkTime);
         }
     }
 
